@@ -9,53 +9,58 @@ const prefix = process.env.prefix
 bot.login(process.env.token)
 
 //database
-let connection = Mysql.createPool({
-	connectionLimit: 50,
-	host: process.env.database_host,
-	user: process.env.database_user,
-	password: process.env.database_password,
-	database: process.env.database_name
-})
-
-let empty = "Empty"
-let commands = empty;
-connection.getConnection(function(error, tempConnect)
+function updateDatabase()
 {
-	if(error)
+	let connection = Mysql.createPool({
+		connectionLimit: 50,
+		host: process.env.database_host,
+		user: process.env.database_user,
+		password: process.env.database_password,
+		database: process.env.database_name
+	})
+
+	let empty = "Empty"
+	let commands = empty
+	connection.getConnection(function(error, tempConnect)
 	{
-		tempConnect.release()
-		console.error(error)
-	} else {
-		tempConnect.query("SELECT * FROM altbot", function(error, rows, fields)
+		if(error)
 		{
 			tempConnect.release()
-			if(error)
+			console.error(error)
+		} else {
+			tempConnect.query("SELECT * FROM altbot", function(error, rows, fields)
 			{
-				console.error(error)
-			} else {
-				commands = rows;
-				if(commands === empty)
+				tempConnect.release()
+				if(error)
 				{
-					console.error("No commands in database")
+					console.error(error)
 				} else {
-					console.info("Query :", commands)
+					commands = rows
+					if(commands === empty)
+					{
+						console.error("No commands in database")
+					} else {
+						console.info("Query :", commands)
+					}
 				}
-			}
-		})
-	}
-})
+			})
+		}
+	})
+}
 
 //bot
 bot.on("ready", function(message)
 {
 	bot.user.setActivity("les ordres", {type: "LISTENING"})
-	.catch(console.error);
+	.catch(console.error)
+	updateDatabase()
 })
 
 bot.on("message", async function(command)
 {
 	if(command.author.equals(bot.user)) return
 	let args = command.content.substring(prefix.length).split(" ")
+	updateDatabase()
 	//commandes
 	for (let i = 0; i < commands.length; i++)
 	{
@@ -130,13 +135,13 @@ bot.on("message", async function(command)
 			}
 			return
 		}
-		//else if(command.content.toLowerCase() === prefix+"stop")
-		//{
-		//	bot.user.setActivity("Althenia", {type: "PLAYING"})
-		//	command.delete(0)
-		//	bot.destroy()
-		//	.catch(console.error)
-		//}
+		// else if(command.content.toLowerCase() === prefix+"stop")
+		// {
+		// 	bot.user.setActivity("Althenia", {type: "PLAYING"})
+		// 	command.delete(0)
+		// 	bot.destroy()
+		// 	.catch(console.error)
+		// }
 	}
 	return
 })
