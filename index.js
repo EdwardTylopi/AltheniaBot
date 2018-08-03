@@ -4,7 +4,7 @@ const Mysql = require("mysql")
 const Express = require("express")
 const app = Express()
 
-const prefix = "%"
+const prefix = process.env.prefix
 let commands
 
 bot.login(process.env.token)
@@ -46,6 +46,7 @@ function updateDatabase()
 						{
 							console.info(commands[i].command)
 						}
+						return true
 					}
 				}
 			})
@@ -56,9 +57,11 @@ function updateDatabase()
 //bot
 bot.on("ready", function(message)
 {
-	bot.user.setActivity("les ordres", {type: "LISTENING"})
-	.catch(console.error);
-	updateDatabase()
+	if(updateDatabase())
+	{
+		bot.user.setActivity("les ordres", {type: "LISTENING"})
+		.catch(console.error);
+	}
 })
 
 bot.on("message", async function(command)
