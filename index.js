@@ -47,13 +47,13 @@ function updateDatabase()
 		}
 	})
 }
+updateDatabase()
 
 //bot
 bot.on("ready", function(message)
 {
 	bot.user.setActivity("les ordres", {type: "LISTENING"})
 	.catch(console.error)
-	updateDatabase()
 })
 
 bot.on("message", async function(command)
