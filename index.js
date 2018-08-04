@@ -6,16 +6,17 @@ const app = Express()
 
 const prefix = process.env.prefix
 let commands
+let commandsGot = false
 
 bot.login(process.env.token)
 
 //database
 let connection = Mysql.createPool({
 	connectionLimit: 50,
-	host: "process.env.database_host",
-	user: "process.env.database_user",
-	password: "process.env.database_password",
-	database: "process.env.database_name"
+	host: process.env.database_host,
+	user: process.env.database_user,
+	password: process.env.database_password,
+	database: process.env.database_name
 })
 
 function updateDatabase()
@@ -41,12 +42,13 @@ function updateDatabase()
 					{
 						console.error("No commands in database")
 					} else {
-						console.info("Commands :")
+						console.info("----------\nCommands :")
 						for(let i = 0; i < commands.length; i++)
 						{
-							console.info(commands[i].command)
+							console.info(prefix+commands[i].command)
 						}
-						return true
+						console.info("----------")
+						commandsGot = true
 					}
 				}
 			})
@@ -57,22 +59,21 @@ function updateDatabase()
 //bot
 bot.on("ready", function(message)
 {
-	if(updateDatabase())
-	{
-		bot.user.setActivity("les ordres", {type: "LISTENING"})
-		.catch(console.error);
-	}
+	bot.user.setActivity("les ordres", {type: "LISTENING"})
+	.catch(console.error);
+	updateDatabase()
 })
 
 bot.on("message", async function(command)
 {
-	if(command.author.equals(bot.user)) return
-	let args = command.content.substring(prefix.length).split(" ")
+	if(command.author.equals(bot.user) || !commandsGot) return
+	let args = command.content.split(" ")
+	console.log(args)
 	//commandes
 	for(let i = 0; i < commands.length; i++)
 	{
-		let commands_name = commands[i].command
-		if(command.content.toLowerCase() === prefix+commands_name)
+		let commands_name = commands[i].command.toLowerCase()
+		if(args[0].toLowerCase() === prefix+commands_name)
 		{
 			if(commands[i].command_delete)
 			{
@@ -115,7 +116,7 @@ bot.on("message", async function(command)
 				})
 			}
 			return
-		} else if(command.content.toLowerCase() === prefix+"update")
+		} else if(args[0].toLowerCase() === prefix+"update")
 		{
 			updateDatabase()
 			command.delete(0)
