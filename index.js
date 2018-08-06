@@ -59,7 +59,7 @@ function updateDatabase()
 
 function placeArgument(argsFrom=undefined, argsTo=undefined)
 {
-	let result = charSpace
+	let result = "."
 	argsFrom = argsFrom.slice(1)
 	if(argsFrom.length >= 1)
 	{
