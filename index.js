@@ -61,7 +61,7 @@ function placeArgument(argsFrom=undefined, argsTo=undefined)
 {
 	let result = "."
 	argsFrom = argsFrom.slice(1)
-	if(argsFrom.length >= 1)
+	if(argsFrom.length >= 1 && argsTo.match(/%arg(s|[1-9]+[0-9]*)?/gi) != undefined)
 	{
 		result = argsTo.join(charSpace)
 		for(let i = 0; i < argsTo.length; i++)
@@ -81,6 +81,9 @@ function placeArgument(argsFrom=undefined, argsTo=undefined)
 				result = result.replace(/%arg/i, argsFrom[0])
 			}
 		}
+	} else if(argsTo.match(/%arg(s|[1-9]+[0-9]*)?/gi) == undefined)
+	{
+		result = argsTo.join(charSpace)
 	}
 	return result
 }
