@@ -70,6 +70,7 @@ function placeArgument(argsFrom=undefined, argsTo=undefined)
 			{
 				//case %argsN
 				let index = argsTo[i].match(/%arg([1-9]+[0-9]*)/i)[0].slice(4)
+				if(argsFrom[index-1] == undefined) argsFrom[index-1] = ""
 				result = result.replace("%arg"+[index], argsFrom[index-1])
 			} else if(argsTo[i].match(/%args/i) != undefined)
 			{
