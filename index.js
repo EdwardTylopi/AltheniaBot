@@ -59,10 +59,11 @@ function updateDatabase()
 
 function placeArgument(argsFrom=undefined, argsTo=undefined)
 {
-	let result = argsTo.join(charSpace)
+	let result = ""
 	argsFrom = argsFrom.slice(1)
 	if(argsFrom.length >= 1)
 	{
+		result = argsTo.join(charSpace)
 		for(let i = 0; i < argsTo.length; i++)
 		{
 			if(argsTo[i].match(/%arg([1-9]+[0-9]*)/i) != undefined)
@@ -152,17 +153,7 @@ bot.on("message", async function(command)
 			return
 		}
 	}
-	if(senderArgs[0].toLowerCase() === prefix+"update")
-	{
-		updateDatabase()
-		command.delete(0)
-		command.channel.send("Base de données mis à jour...")
-		.then(function(messageReply)
-		{
-			messageReply.delete(5000)
-		})
-		return
-	} else if(senderArgs[0].toLowerCase() === prefix+"poll")
+	if(senderArgs[0].toLowerCase() === prefix+"poll")
 	{
 		for(let i = 0; i < senderArgs.length; i++)
 		{
@@ -201,6 +192,16 @@ bot.on("message", async function(command)
 			//messageReply.react("https://discordapp.com/assets/c6b26ba81f44b0c43697852e1e1d1420.svg")
 		})
 		command.delete(0)
+		return
+	} else if(senderArgs[0].toLowerCase() === prefix+"update")
+	{
+		updateDatabase()
+		command.delete(0)
+		command.channel.send("Base de données mis à jour...")
+		.then(function(messageReply)
+		{
+			messageReply.delete(5000)
+		})
 		return
 	} else if(senderArgs[0].toLowerCase() === prefix+"stop")
 	{
