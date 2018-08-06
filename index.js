@@ -152,7 +152,7 @@ bot.on("message", async function(command)
 			return
 		}
 	}
-	if(senderArgs[0].toLowerCase() === prefix+"updete")
+	if(senderArgs[0].toLowerCase() === prefix+"update")
 	{
 		updateDatabase()
 		command.delete(0)
