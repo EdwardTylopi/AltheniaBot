@@ -1,3 +1,4 @@
+// Application par EdwardT
 const Discord = require("discord.js")
 const bot = new Discord.Client()
 const Mysql = require("mysql")
@@ -5,6 +6,7 @@ const Express = require("express")
 const app = Express()
 
 const prefix = process.env.prefix
+const dataTable = "altbot_commands"
 const charSpace = " "
 let commands
 let commandsGot = false
@@ -30,14 +32,16 @@ function updateDatabase()
 		if(error)
 		{
 			tempConnect.release()
-			console.error(error)
+			// console.error(error)
+			throw error
 		} else {
-			tempConnect.query("SELECT * FROM altbot", function(error, rows, fields)
+			tempConnect.query("SELECT * FROM "+dataTable, function(error, rows, fields)
 			{
 				tempConnect.release()
 				if(error)
 				{
-					console.error(error)
+					// console.error(error)
+					throw error
 				} else {
 					commands = rows;
 					if(commands === empty)
