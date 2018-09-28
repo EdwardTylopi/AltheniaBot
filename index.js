@@ -241,6 +241,12 @@ bot.on("ready", function()
 bot.on("message", async function(command)
 {
 	if(command.author.equals(bot.user) || !commandsGot) return
+	if(muted.includes(command.author))
+	{
+		command.delete(0)
+		command.author.send("Vous êtes muet !")
+		.then(messagePrivate => messagePrivate.delete(informationTime))
+	}
 	let senderArgs = command.content.split(charSpace)
 	//commandes
 	for(let i = 0; i < commands.length; i++)
