@@ -329,7 +329,6 @@ bot.on("message", async function(command)
 			return
 		}
 	}
-	// ================ ================ ================ ================
 	if(senderArgs[0].toLowerCase() === prefix+"mute")
 	{
 		command.delete(0)
@@ -347,7 +346,7 @@ bot.on("message", async function(command)
 			for(member of membersList)
 			{
 				let muting = member.user.username
-				if(muting == senderArgs[1])
+				if(textArg.includes(muting))
 				{
 					muted.push(muting)
 					command.reply(muting+" rendu muet")
