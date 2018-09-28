@@ -467,6 +467,22 @@ bot.on("message", async function(command)
 			//messageReply.react("https://discordapp.com/assets/c6b26ba81f44b0c43697852e1e1d1420.svg")
 		})
 		return
+	} else if(senderArgs[0].toLowerCase() === prefix+"cls")
+	{
+		command.delete(0)
+		.then(() => {
+			command.author.send("Suppression des messages ICI...")
+			.then(messagePrivate => {
+				messagePrivate.channel.fetchMessages()
+				.then(messagesToDelete => {
+					const messagesToDeleteList = messagesToDelete.array()
+					for(messageToDelete of messagesToDeleteList)
+					{
+						messageToDelete.delete(0)
+					}
+				})
+			})
+		})
 	} else if(senderArgs[0].toLowerCase() === prefix+"update")
 	{
 		command.delete(0)
