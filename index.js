@@ -387,7 +387,7 @@ bot.on("message", async function(command)
 			for(member of membersList)
 			{
 				let unmuting = member.user.username
-				if(unmuting == senderArgs[1])
+				if(textArg.includes(unmuting))
 				{
 					if(muted.includes(unmuting))
 					{
