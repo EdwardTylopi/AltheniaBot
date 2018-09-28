@@ -8,6 +8,10 @@ const app = Express()
 const prefix = process.env.prefix
 const dataTable = "altbot_commands"
 const charSpace = " "
+const informationTime = process.env.informationTime
+const errorTime = process.env.errorTime
+const spamTime = process.env.spamTime
+let muted = []
 let commands
 let commandsGot = false
 let disallowedCommands = []
@@ -90,7 +94,7 @@ function loopAutorized(command, permission)
 		if(matched != undefined && matched[1] != undefined && matched[1].toLowerCase() == rolesList[i].name.toLowerCase())
 		{
 			let role = matched[1].toLowerCase()
-			let membersList = command.guild.members.array()
+			const membersList = command.guild.members.array()
 			for(let i = 0; i < membersList.length; i++)
 			{
 				if(sender.username.toLowerCase() == membersList[i].user.username.toLowerCase())
@@ -111,7 +115,7 @@ function loopAutorized(command, permission)
 		if(matched != undefined && matched[1] != undefined && matched[1].toLowerCase() == rolesList[i].name.toLowerCase())
 		{
 			let role = matched[1].toLowerCase()
-			let membersList = command.guild.members.array()
+			const membersList = command.guild.members.array()
 			let found = false
 			for(let i = 0; i < membersList.length; i++)
 			{
@@ -227,7 +231,7 @@ function bbcode(argsFrom=undefined, argsTo=undefined)
 }
 
 //bot
-bot.on("ready", function(message)
+bot.on("ready", function()
 {
 	bot.user.setActivity("les ordres", {type: "LISTENING"})
 	.catch(console.error);
@@ -319,17 +323,104 @@ bot.on("message", async function(command)
 			return
 		}
 	}
-	if(senderArgs[0].toLowerCase() === prefix+"update")
+	// ================ ================ ================ ================
+	if(senderArgs[0].toLowerCase() === prefix+"mute")
 	{
 		command.delete(0)
-		if(!autorized(command, "%%is(EdwardT)")) return
-		updateDatabase()
-		command.channel.send("Base de données mis à jour...")
-		.then(function(messageReply)
+		if(!autorized(command, "%%has(administrateur) %%has(modérateur)"))
 		{
-			messageReply.delete(5000)
-		})
-		return
+			return command.reply("Vous n'avez pas la permission requise")
+			.then(messageReply => {
+				messageReply.delete(errorTime)
+			})
+		}
+		textArg = senderArgs.slice(1).join(charSpace)
+		if(textArg.length > 0)
+		{
+			const membersList = command.guild.members.array()
+			for(member of membersList)
+			{
+				let muting = member.user.username
+				if(muting == senderArgs[1])
+				{
+					muted.push(muting)
+					command.reply(muting+" rendu muet")
+					.then(messageReply => {
+						messageReply.delete(informationTime)
+						.then(() => {
+							command.author.send("Les membres muets sont :\n"+muted.join(", "))
+						})
+					})
+				}
+			}
+		} else {
+			command.reply("Vous devez spécifier un utilisateur à rendre muet")
+			.then(messageReply => {
+				messageReply.delete(errorTime)
+				.then(() => {
+					command.author.send("La syntaxe de la commande:\n```css\n"+prefix+"mute <user>\n```")
+					.then(messagePrivate => {
+						messagePrivate.delete(informationTime)
+					})
+				})
+			})
+		}
+	} else if(senderArgs[0].toLowerCase() === prefix+"unmute")
+	{
+		command.delete(0)
+		if(!autorized(command, "%%has(administrateur) %%has(modérateur)"))
+		{
+			return command.reply("Vous n'avez pas la permission requise")
+			.then(messageReply => {
+				messageReply.delete(errorTime)
+			})
+		}
+		textArg = senderArgs.slice(1).join(charSpace)
+		if(textArg.length > 0)
+		{
+			const membersList = command.guild.members.array()
+			for(member of membersList)
+			{
+				let unmuting = member.user.username
+				if(unmuting == senderArgs[1])
+				{
+					if(muted.includes(unmuting))
+					{
+						const index = muted.indexOf(unmuting)
+						muted = muted.slice(index+1)
+						command.reply(unmuting+" rendu parlant")
+						.then(messageReply => {
+							messageReply.delete(informationTime)
+							.then(() => {
+								command.author.send("Les membres muets sont :\n"+muted.join(", "))
+							})
+						})
+					} else {
+						command.reply("L'utilisateur spécifié n'est pas muet")
+						.then(messageReply => {
+							messageReply.delete(errorTime)
+							.then(() => {
+								command.author.send("Les membres muets sont :\n"+muted.join(", "))
+								.then(messagePrivate => {
+									messagePrivate.delete(informationTime)
+								})
+							})
+						})
+					}
+				}
+			}
+		} else {
+			command.reply("Vous devez spécifier un utilisateur à rendre parlant")
+			.then(messageReply => {
+				messageReply.delete(errorTime)
+				.then(() => {
+					command.author.send("La syntaxe de la commande:\n```css\n"+prefix+"unmute <user>\n```")
+					.then(messagePrivate => {
+						messagePrivate.delete(informationTime)
+					})
+				})
+			})
+		}
 	} else if(senderArgs[0].toLowerCase() === prefix+"poll")
 	{
 		command.delete(0)
@@ -369,6 +460,17 @@ bot.on("message", async function(command)
 				messageReply.react(emojisList[1])
 			})
 			//messageReply.react("https://discordapp.com/assets/c6b26ba81f44b0c43697852e1e1d1420.svg")
+		})
+		return
+	} else if(senderArgs[0].toLowerCase() === prefix+"update")
+	{
+		command.delete(0)
+		if(!autorized(command, "%%is(EdwardT)")) return
+		updateDatabase()
+		command.channel.send("Base de données mis à jour...")
+		.then(function(messageReply)
+		{
+			messageReply.delete(5000)
 		})
 		return
 	} else if(senderArgs[0].toLowerCase() === prefix+"stop")
