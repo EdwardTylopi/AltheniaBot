@@ -93,7 +93,7 @@ const loopAutorized = (command, permission="%%all") => {
 			const membersList = command.guild.members.array()
 			for(let i = 0; i < membersList.length; i++)
 			{
-				const maybeNickname = (membersList[i].nickname === undefined ? membersList[i].user.username : membersList[i].nickname)
+				const maybeNickname = (membersList[i].nickname === null ? membersList[i].user.username : membersList[i].nickname)
 				if(sender.username.toLowerCase() == maybeNickname.toLowerCase())
 				{
 					let memberRolesList = membersList[i].roles.array()
@@ -116,7 +116,7 @@ const loopAutorized = (command, permission="%%all") => {
 			let found = false
 			for(let i = 0; i < membersList.length; i++)
 			{
-				const maybeNickname = (membersList[i].nickname === undefined ? membersList[i].user.username : membersList[i].nickname)
+				const maybeNickname = (membersList[i].nickname === null ? membersList[i].user.username : membersList[i].nickname)
 				if(sender.username.toLowerCase() == maybeNickname.toLowerCase())
 				{
 					let memberRolesList = membersList[i].roles.array()
@@ -311,7 +311,7 @@ bot.on("message", command => {
 			const membersList = command.guild.members.array()
 			for(member of membersList)
 			{
-				let muting = (member.nickname === undefined ? member.user.username : member.nickname)
+				let muting = (member.nickname === null ? member.user.username : member.nickname)
 				if(textArg.includes(muting))
 				{
 					console.log("IF muting=", muting, "inside textArg", textArg)
@@ -348,7 +348,7 @@ bot.on("message", command => {
 			const membersList = command.guild.members.array()
 			for(member of membersList)
 			{
-				let unmuting = (member.nickname === undefined ? member.user.username : member.nickname)
+				let unmuting = (member.nickname === null ? member.user.username : member.nickname)
 				if(textArg.includes(unmuting))
 				{
 					if(muted.includes(unmuting))
