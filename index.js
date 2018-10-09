@@ -27,20 +27,17 @@ let connection = Mysql.createPool({
 	database: process.env.database_name
 })
 
-function updateDatabase()
-{
+const updateDatabase = () => {
 	let empty = "Empty"
 	commands = empty;
-	connection.getConnection(function(error, tempConnect)
-	{
+	connection.getConnection((error=false, tempConnect) => {
 		if(error)
 		{
 			tempConnect.release()
 			// console.error(error)
 			throw error
 		} else {
-			tempConnect.query("SELECT * FROM "+dataTable, function(error, rows, fields)
-			{
+			tempConnect.query("SELECT * FROM "+dataTable, (error=false, rows, fields) => {
 				tempConnect.release()
 				if(error)
 				{
@@ -66,8 +63,7 @@ function updateDatabase()
 	})
 }
 
-function loopAutorized(command, permission)
-{
+const loopAutorized = (command, permission="%%all") => {
 	let sender = command.author
 	let matched
 	permission = permission.toLowerCase()
@@ -79,7 +75,7 @@ function loopAutorized(command, permission)
 	//%%all
 	matched = permission.match(/%%all(\("?.*"?\))?/i)
 	if(matched != undefined) return true
-	//%username
+	//username
 	if(permission == sender.username.toLowerCase()) return true
 	//%%is
 	matched = permission.match(/%%is\("?(([a-z]|é)+)"?\)/i)
@@ -97,7 +93,8 @@ function loopAutorized(command, permission)
 			const membersList = command.guild.members.array()
 			for(let i = 0; i < membersList.length; i++)
 			{
-				if(sender.username.toLowerCase() == membersList[i].user.username.toLowerCase())
+				const maybeNickname = (membersList[i].nickname !== undefined ? membersList[i].nickname : membersList[i].user.username)
+				if(sender.username.toLowerCase() == maybeNickname.toLowerCase())
 				{
 					let memberRolesList = membersList[i].roles.array()
 					for(let i = 0; i < memberRolesList.length; i++)
@@ -119,7 +116,8 @@ function loopAutorized(command, permission)
 			let found = false
 			for(let i = 0; i < membersList.length; i++)
 			{
-				if(sender.username.toLowerCase() == membersList[i].user.username.toLowerCase())
+				const maybeNickname = (membersList[i].nickname !== undefined ? membersList[i].nickname : membersList[i].user.username)
+				if(sender.username.toLowerCase() == maybeNickname.toLowerCase())
 				{
 					let memberRolesList = membersList[i].roles.array()
 					for(let i = 0; i < memberRolesList.length; i++)
@@ -134,8 +132,7 @@ function loopAutorized(command, permission)
 	return false
 }
 
-function autorized(command, permission)
-{
+const autorized = (command, permission="%%all") => {
 	let found = false
 	do
 	{
@@ -145,47 +142,36 @@ function autorized(command, permission)
 	return found
 }
 
-function disallowCommand(command)
-{
+const disallowCommand = command => {
 	let commandName = command.command
 	let commandDelay = command.command_delay
 	disallowedCommands.push(commandName)
-	setTimeout(function()
-	{
+	setTimeout(() => {
 		let index = disallowedCommands.indexOf(commandName)
 		disallowedCommands = disallowedCommands.slice(index+1)
 	}, commandDelay);
 }
 
-function isDisallowedCommand(command)
-{
+const isDisallowedCommand = command => {
 	return disallowedCommands.includes(command)
 }
 
-function pickRandomInto(min=0, max=0)
-{
-	if(min > max)
-	{
-		let buffer = min
-		min = max
-		max = buffer-1
-	}
-	let value = Math.floor((Math.random()*max-min)+1*min)
-	return value
+const pickRandomInto = (min=0, max=0) => {
+	if(min > max) [min, max] = [max, min]
+	return Math.floor((Math.random()*max-min)+1*min)
 }
 
-function specials(toChange=undefined)
-{
+const specials = (toChange=[]) => {
 	toChange = toChange.join(charSpace)
 	//%%rnd(%min, %max)
-	while(toChange.match(/%%rnd\(([0-9]+(, ?[0-9]+)?)\)/i) != undefined)
+	while(toChange.match(/%%rnd\(([0-9]+(, ?[0-9]+)?)\)/i) !== undefined)
 	{
-		if(toChange.match(/%%rnd\(([0-9]+)\)/i) != undefined)
+		if(toChange.match(/%%rnd\(([0-9]+)\)/i) !== undefined)
 		{
 			let matched = toChange.match(/%%rnd\(([0-9]+)\)/i)
 			let max = matched[1]
 			toChange = toChange.replace(matched[0], pickRandomInto(max))
-		} else if(toChange.match(/%%rnd\(([0-9]+, ?[0-9]+)\)/i) != undefined)
+		} else if(toChange.match(/%%rnd\(([0-9]+, ?[0-9]+)\)/i) !== undefined)
 		{
 			let matched = toChange.match(/%%rnd\(([0-9]+), ?([0-9]+)\)/i)
 			let min = matched[1]
@@ -193,37 +179,35 @@ function specials(toChange=undefined)
 			toChange = toChange.replace(matched[0], pickRandomInto(min, max))
 		}
 	}
-	toChange = toChange.split(charSpace)
-	return toChange
+	return toChange.split(charSpace)
 }
 
-function bbcode(argsFrom=undefined, argsTo=undefined)
-{
+const bbcode = (argsFrom=undefined, argsTo=undefined) => {
 	let result = "."
 	argsFrom = argsFrom.slice(1)
 	argsTo = specials(argsTo)
-	if(argsFrom.length >= 1 && argsTo.join(charSpace).match(/%arg(s|[1-9]+[0-9]*)?/gi) != undefined)
+	if(argsFrom.length >= 1 && argsTo.join(charSpace).match(/%arg(s|[1-9]+[0-9]*)?/gi) !== undefined)
 	{
 		result = argsTo.join(charSpace)
 		for(let i = 0; i < argsTo.length; i++)
 		{
-			if(argsTo[i].match(/%arg([1-9]+[0-9]*)/i) != undefined)
+			if(argsTo[i].match(/%arg([1-9]+[0-9]*)/i) !== undefined)
 			{
 				//case %argsN
 				let index = argsTo[i].match(/%arg([1-9]+[0-9]*)/i)[0].slice(4)
-				if(argsFrom[index-1] == undefined) argsFrom[index-1] = ""
+				if(argsFrom[index-1] === undefined) argsFrom[index-1] = ""
 				result = result.replace("%arg"+index, argsFrom[index-1])
-			} else if(argsTo[i].match(/%args/i) != undefined)
+			} else if(argsTo[i].match(/%args/i) !== undefined)
 			{
 				//case %args
 				result = result.replace(/%args/i, argsFrom.join(charSpace))
-			} else if(argsTo[i].match(/%arg/i) != undefined)
+			} else if(argsTo[i].match(/%arg/i) !== undefined)
 			{
 				//case %arg
 				result = result.replace(/%arg/i, argsFrom[0])
 			}
 		}
-	} else if(argsTo.join(charSpace).match(/%arg(s|[1-9]+[0-9]*)?/gi) == undefined)
+	} else if(argsTo.join(charSpace).match(/%arg(s|[1-9]+[0-9]*)?/gi) === undefined)
 	{
 		result = argsTo.join(charSpace)
 	}
@@ -231,15 +215,13 @@ function bbcode(argsFrom=undefined, argsTo=undefined)
 }
 
 //bot
-bot.on("ready", function()
-{
+bot.on("ready", () => {
 	bot.user.setActivity("les ordres", {type: "LISTENING"})
 	.catch(console.error);
 	updateDatabase()
 })
 
-bot.on("message", async function(command)
-{
+bot.on("message", command => {
 	if(command.author.equals(bot.user) || !commandsGot) return
 	if(muted.includes(command.author.username))
 	{
@@ -259,8 +241,7 @@ bot.on("message", async function(command)
 			if(!autorized(command, commands[i].command_permission))
 			{
 				command.reply("Tu n'a pas la permission requise :(")
-				.then(function(messageReply)
-				{
+				.then(messageReply => {
 					command.delete(0)
 					messageReply.delete(3000)
 				})
@@ -270,8 +251,7 @@ bot.on("message", async function(command)
 			if(isDisallowedCommand(commands[i].command))
 			{
 				command.reply("Tu dois attendre un peu :(")
-				.then(function(messageReply)
-				{
+				.then(messageReply => {
 					command.delete(0)
 					messageReply.delete(3000)
 				})
@@ -290,12 +270,8 @@ bot.on("message", async function(command)
 				let dbArgs = commands[i].reply_content.split(charSpace)
 				command.reply(bbcode(senderArgs, dbArgs))
 				// command.reply(commands[i].reply_content)
-				.then(function(messageReply)
-				{
-					if(commands[i].reply_delete)
-					{
-						messageReply.delete(commands[i].reply_delete_time)
-					}
+				.then(messageReply => {
+					if(commands[i].reply_delete) messageReply.delete(commands[i].reply_delete_time)
 				})
 			}
 			//message
@@ -304,12 +280,8 @@ bot.on("message", async function(command)
 				let dbArgs = commands[i].message_content.split(charSpace)
 				command.channel.send(bbcode(senderArgs, dbArgs))
 				// command.channel.send(commands[i].message_content)
-				.then(function(messageReply)
-				{
-					if(commands[i].message_delete)
-					{
-						messageReply.delete(commands[i].message_delete_time)
-					}
+				.then(messageReply => {
+					if(commands[i].message_delete) messageReply.delete(commands[i].message_delete_time)
 				})
 			}
 			//private
@@ -318,12 +290,8 @@ bot.on("message", async function(command)
 				let dbArgs = commands[i].private_content.split(charSpace)
 				command.author.send(bbcode(senderArgs, dbArgs))
 				// command.author.send(commands[i].private_content)
-				.then(function(messageReply)
-				{
-					if(commands[i].private_delete)
-					{
-						messageReply.delete(commands[i].private_delete_time)
-					}
+				.then(messageReply => {
+					if(commands[i].private_delete) messageReply.delete(commands[i].private_delete_time)
 				})
 			}
 			return
@@ -335,9 +303,7 @@ bot.on("message", async function(command)
 		if(!autorized(command, "%%has(administrateur) %%has(modérateur)"))
 		{
 			return command.reply("Vous n'avez pas la permission requise")
-			.then(messageReply => {
-				messageReply.delete(errorTime)
-			})
+			.then(messageReply => messageReply.delete(errorTime))
 		}
 		textArg = senderArgs.slice(1).join(charSpace)
 		if(textArg.length > 0)
@@ -345,16 +311,16 @@ bot.on("message", async function(command)
 			const membersList = command.guild.members.array()
 			for(member of membersList)
 			{
-				let muting = member.user.username
+				let muting = (member.nickname !== undefined ? member.nickname : member.user.username)
 				if(textArg.includes(muting))
 				{
+					console.log("IF muting=", muting, "inside textArg", textArg)
 					muted.push(muting)
+					console.log("Muted", muted)
 					command.reply(muting+" rendu muet")
 					.then(messageReply => {
 						messageReply.delete(informationTime)
-						.then(() => {
-							command.author.send("Les membres muets sont :\n"+muted.join(", "))
-						})
+						.then(() => command.author.send("Les membres muets sont :\n"+muted.join(", ")))
 					})
 				}
 			}
@@ -364,9 +330,7 @@ bot.on("message", async function(command)
 				messageReply.delete(errorTime)
 				.then(() => {
 					command.author.send("La syntaxe de la commande:\n```css\n"+prefix+"mute <user>\n```")
-					.then(messagePrivate => {
-						messagePrivate.delete(informationTime)
-					})
+					.then(messagePrivate => messagePrivate.delete(informationTime))
 				})
 			})
 		}
@@ -376,9 +340,7 @@ bot.on("message", async function(command)
 		if(!autorized(command, "%%has(administrateur) %%has(modérateur)"))
 		{
 			return command.reply("Vous n'avez pas la permission requise")
-			.then(messageReply => {
-				messageReply.delete(errorTime)
-			})
+			.then(messageReply => messageReply.delete(errorTime))
 		}
 		textArg = senderArgs.slice(1).join(charSpace)
 		if(textArg.length > 0)
@@ -386,7 +348,7 @@ bot.on("message", async function(command)
 			const membersList = command.guild.members.array()
 			for(member of membersList)
 			{
-				let unmuting = member.user.username
+				let unmuting = (member.nickname !== undefined ? member.nickname : member.user.username)
 				if(textArg.includes(unmuting))
 				{
 					if(muted.includes(unmuting))
@@ -396,9 +358,7 @@ bot.on("message", async function(command)
 						command.reply(unmuting+" rendu parlant")
 						.then(messageReply => {
 							messageReply.delete(informationTime)
-							.then(() => {
-								command.author.send("Les membres muets sont :\n"+muted.join(", "))
-							})
+							.then(() => command.author.send("Les membres muets sont :\n"+muted.join(", ")))
 						})
 					} else {
 						command.reply("L'utilisateur spécifié n'est pas muet")
@@ -406,9 +366,7 @@ bot.on("message", async function(command)
 							messageReply.delete(errorTime)
 							.then(() => {
 								command.author.send("Les membres muets sont :\n"+muted.join(", "))
-								.then(messagePrivate => {
-									messagePrivate.delete(informationTime)
-								})
+								.then(messagePrivate => messagePrivate.delete(informationTime))
 							})
 						})
 					}
@@ -420,9 +378,7 @@ bot.on("message", async function(command)
 				messageReply.delete(errorTime)
 				.then(() => {
 					command.author.send("La syntaxe de la commande:\n```css\n"+prefix+"unmute <user>\n```")
-					.then(messagePrivate => {
-						messagePrivate.delete(informationTime)
-					})
+					.then(messagePrivate => messagePrivate.delete(informationTime))
 				})
 			})
 		}
@@ -455,18 +411,13 @@ bot.on("message", async function(command)
 		.setFooter("On attends vos réponses...")
 		.setTimestamp()
 		command.channel.send(embed)
-		.then(function(messageReply)
-		{
-			// let emoji = bot.emojis.find("name", "Oui")
+		.then(messageReply => {
+			// const emoji = bot.emojis.find("name", "Oui")
 			// messageReply.react(emoji)
 			messageReply.react(emojisList[0])
-			.then(function(messageReaction)
-			{
-				messageReply.react(emojisList[1])
-			})
+			.then(() => messageReply.react(emojisList[1]))
 			//messageReply.react("https://discordapp.com/assets/c6b26ba81f44b0c43697852e1e1d1420.svg")
 		})
-		return
 	} else if(senderArgs[0].toLowerCase() === prefix+"cls")
 	{
 		command.delete(0)
@@ -489,27 +440,17 @@ bot.on("message", async function(command)
 		if(!autorized(command, "%%is(EdwardT)")) return
 		updateDatabase()
 		command.channel.send("Base de données mis à jour...")
-		.then(function(messageReply)
-		{
-			messageReply.delete(5000)
-		})
-		return
+		.then(messageReply => messageReply.delete(5000))
 	} else if(senderArgs[0].toLowerCase() === prefix+"stop")
 	{
 		command.delete(1000)
-		.then(function(messageDelete)
-		{
+		.then(() => {
 			if(command.author.username+"#"+command.author.discriminator !== "EdwardT#"+7170) return
 			bot.user.setActivity("la fin...", {type: "WATCHING"})
-			.then(function(osef)
-			{
+			.then(() => {
 				bot.destroy()
-				.then(function()
-				{
-					throw "Application stopped !"
-				})
-				.catch(function(error)
-				{
+				.then(() => throw "Application stopped !")
+				.catch(error => {
 					console.info(error)
 				})
 			})
@@ -517,12 +458,8 @@ bot.on("message", async function(command)
 	}
 })
 
-bot.on("guildMemberAdd", function(member)
-{
+bot.on("guildMemberAdd", member => {
 	member.createDM()
-	.then(function(channel)
-	{
-		return channel.send("Bienvenue ;)"+member.displayName)
-	})
+	.then(channel => channel.send("Bienvenue ;)"+member.displayName))
 	.catch(console.error)
 })
