@@ -449,7 +449,7 @@ bot.on("message", command => {
 			bot.user.setActivity("la fin...", {type: "WATCHING"})
 			.then(() => {
 				bot.destroy()
-				.then(() => throw "Application stopped !")
+				.then(() => {throw "Application stopped !"})
 				.catch(error => {
 					console.info(error)
 				})
