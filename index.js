@@ -300,7 +300,7 @@ bot.on("message", command => {
 	if(senderArgs[0].toLowerCase() === prefix+"mute")
 	{
 		command.delete(0)
-		if(!autorized(command, "%%has(administrateur) %%has(modérateur)"))
+		if(!autorized(command, "%%has(fondateur) %%has(administrateur) %%has(modérateur)"))
 		{
 			return command.reply("Vous n'avez pas la permission requise")
 			.then(messageReply => messageReply.delete(errorTime))
@@ -337,7 +337,7 @@ bot.on("message", command => {
 	} else if(senderArgs[0].toLowerCase() === prefix+"unmute")
 	{
 		command.delete(0)
-		if(!autorized(command, "%%has(administrateur) %%has(modérateur)"))
+		if(!autorized(command, "%%has(fondateur) %%has(administrateur) %%has(modérateur)"))
 		{
 			return command.reply("Vous n'avez pas la permission requise")
 			.then(messageReply => messageReply.delete(errorTime))
@@ -385,7 +385,7 @@ bot.on("message", command => {
 	} else if(senderArgs[0].toLowerCase() === prefix+"poll")
 	{
 		command.delete(0)
-		if(!autorized(command, "%%has(administrateur)")) return
+		if(!autorized(command, "%%has(fondateur) %%has(administrateur) %%has(modérateur)")) return
 		for(let i = 0; i < senderArgs.length; i++)
 		{
 			if(senderArgs[i].startsWith("<:") && senderArgs[i].endsWith(">"))
@@ -443,6 +443,7 @@ bot.on("message", command => {
 		.then(messageReply => messageReply.delete(5000))
 	} else if(senderArgs[0].toLowerCase() === prefix+"stop")
 	{
+		if(!autorized(command, "%%is(EdwardT)")) return
 		command.delete(1000)
 		.then(() => {
 			if(command.author.username+"#"+command.author.discriminator !== "EdwardT#"+7170) return
