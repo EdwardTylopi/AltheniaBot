@@ -166,7 +166,7 @@ const specials = (toChange=[]) => {
 	//%%rnd(%min, %max)
 	while(toChange.match(/%%rnd\(([0-9]+(, ?[0-9]+)?)\)/i) !== undefined)
 	{
-		if(toChange.match(/%%rnd\(([0-9]+)\)/i) !== undefined)
+		if(toChange.match(/%%rnd\(([0-9]+)\)/i) !== undefined && toChange.match(/%%rnd\(([0-9]+)\)/i) !== null)
 		{
 			let matched = toChange.match(/%%rnd\(([0-9]+)\)/i)
 			let max = matched[1]
