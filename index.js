@@ -171,7 +171,7 @@ const specials = (toChange=[]) => {
 			let matched = toChange.match(/%%rnd\(([0-9]+)\)/i)
 			let max = matched[1]
 			toChange = toChange.replace(matched[0], pickRandomInto(max))
-		} else if(toChange.match(/%%rnd\(([0-9]+, ?[0-9]+)\)/i) !== undefined)
+		} else if(toChange.match(/%%rnd\(([0-9]+, ?[0-9]+)\)/i) !== undefined && toChange.match(/%%rnd\(([0-9]+, ?[0-9]+)\)/i) !== null)
 		{
 			let matched = toChange.match(/%%rnd\(([0-9]+), ?([0-9]+)\)/i)
 			let min = matched[1]
